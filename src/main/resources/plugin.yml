@@ -1,0 +1,12 @@
+name: MittenFishing
+version: '${project.version}'
+main: me.afatcookie.mittenfishing.MittenFishing
+api-version: 1.18
+authors: [ AFatCookie ]
+description: Fishing plugin for MittenMC.
+depend:
+  - Vault
+commands:
+  mf:
+    description: default start for MittenFishing
+    usage: /mf <command>
