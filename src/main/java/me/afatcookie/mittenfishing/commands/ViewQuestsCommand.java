@@ -23,11 +23,16 @@ public class ViewQuestsCommand extends CommandBuilder{
     @Override
     void execute(String[] args, Player player) {
         if (args.length > 0){
+            if (instance.getQuestManager().getPlayersQuest().isEmpty()) System.out.println("EMPTY PLAYER QUEST");
             for (PlayerQuest quest : instance.getQuestManager().getPlayersQuest()){
-                if (quest.getPlayer() == player.getUniqueId()){
+                if (quest == null) continue;
+                if (quest.getPlayer().toString().equals(player.getUniqueId().toString())){
                     player.sendMessage(quest.getQuest().getName());
                     player.sendMessage("Progress" + quest.getProgress());
+                }else{
+                    System.out.println("not equal LOL");
                 }
+
             }
             for (Quest quest :instance.getQuestManager().getQuests()){
                 System.out.println(quest.getName());

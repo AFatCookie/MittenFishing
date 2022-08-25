@@ -1,5 +1,6 @@
 package me.afatcookie.mittenfishing.utils;
 
+import com.github.mittenmc.serverutils.Colors;
 import me.afatcookie.mittenfishing.MittenFishing;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
@@ -86,7 +87,7 @@ public class FishUtils {
     }
 
     public static String colorizeMessage(String message){
-        return ChatColor.translateAlternateColorCodes('&', message);
+        return Colors.conv(message);
     }
 
 }

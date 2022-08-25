@@ -24,5 +24,6 @@ public class OnJoinEvent implements Listener {
         if (!questManager.getHadQuests().contains(e.getPlayer().getUniqueId())){
             questManager.assignPlayerQuests(e.getPlayer().getUniqueId());
         }
+        System.out.println("has already had");
     }
 }

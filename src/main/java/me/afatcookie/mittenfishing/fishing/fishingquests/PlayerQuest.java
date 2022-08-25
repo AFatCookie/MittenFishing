@@ -47,7 +47,7 @@ public class PlayerQuest {
     }
 
     public void updateQuestProgress(int progress) {
-        this.progress += this.progress + progress;
+        this.progress +=  progress;
         if (hasCompletedQuest(this.progress)){
             Bukkit.getServer().getPluginManager().callEvent(new QuestCompleteEvent(player, this));
         }

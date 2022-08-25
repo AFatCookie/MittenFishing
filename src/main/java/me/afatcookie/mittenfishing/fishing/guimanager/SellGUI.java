@@ -34,16 +34,19 @@ public class SellGUI implements GUI{
     public void onClick(Player player, Inventory inventory, ItemStack clickedItem, ClickType clickType, int slot) {
         //This method will handle selling fish, Regardless of where its being done. This will hopefully prevent any
         //duping with guis, and gets an accurate amount for fishes.
-       totalValue = FishUtils.handleSellingFish(inventory, clickedItem, player, slot, totalValue);
-        if (inventory.contains(clickedItem) && clickedItem.getType() == Material.HOPPER) {
-            economy.depositPlayer(player, totalValue);
-            player.sendMessage(cm.getSoldFishMessage().replace("{total_amount}", String.valueOf(totalValue)));
-            inventory.clear();
-            player.closeInventory();
-            if (!questManager.hasActiveSellQuest(player)) return;
-            for (PlayerQuest playerQuest : questManager.getPlayerSellQuest(player)){
-                if (playerQuest.getQuest() instanceof SellQuest){
-                    playerQuest.updateQuestProgress(totalValue);
+        if (!clickType.isShiftClick()) {
+            totalValue = FishUtils.handleSellingFish(inventory, clickedItem, player, slot, totalValue);
+            if (inventory.contains(clickedItem) && clickedItem.getType() == Material.HOPPER) {
+                economy.depositPlayer(player, totalValue);
+                player.sendMessage(cm.getSoldFishMessage().replace("{total_amount}", String.valueOf(totalValue)));
+                inventory.clear();
+                player.closeInventory();
+                if (!questManager.hasActiveSellQuest(player)) return;
+                for (PlayerQuest playerQuest : questManager.getPlayerSellQuest(player)) {
+                    if (playerQuest == null) continue;
+                    if (playerQuest.getQuest() instanceof SellQuest) {
+                        playerQuest.updateQuestProgress(totalValue);
+                    }
                 }
             }
         }

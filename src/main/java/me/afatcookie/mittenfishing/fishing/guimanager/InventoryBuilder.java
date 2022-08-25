@@ -1,4 +1,5 @@
 package me.afatcookie.mittenfishing.fishing.guimanager;
+import com.github.mittenmc.serverutils.Colors;
 import dev.dbassett.skullcreator.SkullCreator;
 import me.afatcookie.mittenfishing.MittenFishing;
 import me.afatcookie.mittenfishing.utils.ItemCreator;
@@ -493,6 +494,6 @@ public class InventoryBuilder {
     }
 
     private String colorizeMessage(String message) {
-        return ChatColor.translateAlternateColorCodes('&', message);
+        return Colors.conv(message);
     }
 }

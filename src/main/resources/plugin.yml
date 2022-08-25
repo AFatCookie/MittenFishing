@@ -6,6 +6,7 @@ authors: [ AFatCookie ]
 description: Fishing plugin for MittenMC.
 depend:
   - Vault
+  - ServerUtils
 commands:
   mf:
     description: default start for MittenFishing

@@ -11,7 +11,6 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.persistence.PersistentDataType;
 import org.bukkit.scheduler.BukkitRunnable;
-
 import java.util.*;
 
 public class QuestManager {
@@ -46,6 +45,9 @@ public class QuestManager {
 
             @Override
             public void run() {
+                for (Quest quest : activeQuests){
+                    instance.getDb().deleteTable(quest);
+                }
                 getNewDailies(quests);
                 assignQuestToOnline();
                 System.out.println(activeQuests);
@@ -161,11 +163,13 @@ public class QuestManager {
             while (activeQuests.size() < 3) {
                 Random random = new Random();
                 int randomNumber = random.nextInt(quests.size());
-                if (activeQuests.contains(quests.get(randomNumber))) continue;
-                activeQuests.add(quests.get(randomNumber));
-                if (quests.get(randomNumber) instanceof CatchFishQuest) {
-                    Fish fishToBeCaught = ((CatchFishQuest) quests.get(randomNumber)).getFishToBeCaught();
-                    instance.getLp().getLootPool().add(new LootItem(fishToBeCaught.getRarity(), fishToBeCaught.getRarity().getWeight(), fishToBeCaught.getFishItem(), instance));
+                if (!activeQuests.contains(quests.get(randomNumber))) {
+                    activeQuests.add(quests.get(randomNumber));
+                    instance.getDb().createQuestTable(quests.get(randomNumber));
+                    if (quests.get(randomNumber) instanceof CatchFishQuest) {
+                        Fish fishToBeCaught = ((CatchFishQuest) quests.get(randomNumber)).getFishToBeCaught();
+                        instance.getLp().getLootPool().add(new LootItem(fishToBeCaught.getRarity(), fishToBeCaught.getRarity().getWeight(), fishToBeCaught.getFishItem(), instance));
+                    }
                 }
             }
         } else {
@@ -198,8 +202,10 @@ public class QuestManager {
     public ArrayList<PlayerQuest> getPlayerSellQuest(Player player) {
         ArrayList<PlayerQuest> playersQuests = new ArrayList<>();
         for (PlayerQuest playerQuest : playersQuest) {
-            if (playerQuest.getQuest() instanceof SellQuest && playerQuest.getPlayer() == player.getUniqueId()) {
-                playersQuests.add(playerQuest);
+            if (playerQuest != null) {
+                if (playerQuest.getQuest() instanceof SellQuest && playerQuest.getPlayer().toString().equals(player.getUniqueId().toString())) {
+                    playersQuests.add(playerQuest);
+                }
             }
         }
         return playersQuests;
@@ -215,8 +221,10 @@ public class QuestManager {
     public ArrayList<PlayerQuest> getPlayerCatchQuest(Player player) {
         ArrayList<PlayerQuest> playersQuests = new ArrayList<>();
         for (PlayerQuest playerQuest : playersQuest) {
-            if (playerQuest.getQuest() instanceof CatchFishQuest && playerQuest.getPlayer() == player.getUniqueId()) {
-                playersQuests.add(playerQuest);
+            if (playerQuest != null) {
+                if (playerQuest.getQuest() instanceof CatchFishQuest && playerQuest.getPlayer().toString().equals(player.getUniqueId().toString())) {
+                    playersQuests.add(playerQuest);
+                }
             }
         }
         return playersQuests;
@@ -230,8 +238,10 @@ public class QuestManager {
      */
     public boolean hasActiveCatchQuest(Player player) {
         for (PlayerQuest playerQuest : playersQuest) {
-            if (playerQuest.getQuest() instanceof CatchFishQuest && playerQuest.getPlayer() == player.getUniqueId()) {
-                return true;
+            if (playerQuest != null) {
+                if (playerQuest.getQuest() instanceof CatchFishQuest && playerQuest.getPlayer().toString().equals(player.getUniqueId().toString())) {
+                    return true;
+                }
             }
         }
         return false;
@@ -245,8 +255,10 @@ public class QuestManager {
      */
     public boolean hasActiveSellQuest(Player player) {
         for (PlayerQuest playerQuest : playersQuest) {
-            if (playerQuest.getQuest() instanceof SellQuest && playerQuest.getPlayer() == player.getUniqueId()) {
-                return true;
+            if (playerQuest != null) {
+                if (playerQuest.getQuest() instanceof SellQuest && playerQuest.getPlayer().toString().equals(player.getUniqueId().toString())) {
+                    return true;
+                }
             }
         }
         return false;
@@ -289,6 +301,8 @@ public class QuestManager {
      */
     public void removePlayerQuest(PlayerQuest playerQuest) {
         playersQuest.remove(playerQuest);
+        if (!instance.getDb().findPlayer(playerQuest.getQuest(), playerQuest.getPlayer()))  return;
+        instance.getDb().removePlayer(playerQuest.getQuest(), playerQuest.getPlayer());
     }
 
     public ArrayList<Quest> getActiveQuests() {
@@ -320,13 +334,16 @@ public class QuestManager {
     the names of quest, or something else.
      */
     public void saveDailiesOnServerClose() {
-        if (activeQuests.isEmpty() || playersQuest.isEmpty()) return;
-        int questNumber = 1;
+        instance.getDb().clearQuestNameTable();
+        if (activeQuests.isEmpty()) return;
         for (Quest quest : activeQuests){
-            instance.getDataConfig().getConfig().set("Quest" + questNumber, quest.getName());
-            questNumber++;
+            instance.getDb().saveToQuestNameTable(quest);
         }
-        instance.getDataConfig().save();
+        if (playersQuest.isEmpty()) return;
+        for (PlayerQuest playerQuest : playersQuest){
+            if (playerQuest == null) continue;
+            instance.getDb().savePlayerDataToTable(playerQuest);
+        }
 
     }
 
@@ -335,15 +352,27 @@ public class QuestManager {
      */
     private void restoreDailyQuestData() {
         reloadQuests(configManager.getQuestConfig().getConfig(), "quests");
-        int questNumber = 1;
-        for (Quest quest : quests) {
-            if (!instance.getDataConfig().getConfig().getString("Quest" + questNumber).equals(quest.getName())) continue;
-            addToDailies(quest);
-            questNumber++;
+        ArrayList<String> savedQuests = instance.getDb().loadCurrentDailiesAfterRestart();
+        ArrayList<PlayerQuest> savedData = new ArrayList<>();
+        if (savedQuests.isEmpty()){
+            System.out.println("creating new quests");
+            getNewDailies(quests);
+            return;
         }
-
-
-        if (activeQuests.isEmpty()) return;
+        for (String string : savedQuests){
+            for (Quest quest : quests){
+                if (quest.getName().toLowerCase().replace(" ", "_").replace(".", "_").equalsIgnoreCase(string)){
+                    activeQuests.add(quest);
+                    System.out.println("added to active quests, attempting to add to saved data");
+                    if (instance.getDb().loadDataAfterRestart(quest) == null){
+                        Bukkit.getLogger().warning("Failed to grab data for a player from sqlLite");
+                    }
+                   savedData.add(instance.getDb().loadDataAfterRestart(quest));
+                }
+            }
+        }
+        playersQuest.addAll(savedData);
+        System.out.println("saved data");
     }
 
     public ArrayList<UUID> getHadQuests() {

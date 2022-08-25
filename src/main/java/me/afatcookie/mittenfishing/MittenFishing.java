@@ -39,6 +39,7 @@ public final class MittenFishing extends JavaPlugin {
     private static RodManager rodManager;
     private Database db;
 
+
     private static QuestManager questManager;
     private static DiscoverableFish fishDiscover;
     public static MittenFishing getInstance(){
@@ -64,7 +65,10 @@ public final class MittenFishing extends JavaPlugin {
     fishDiscover = new DiscoverableFish(instance);
         lp = new LootPool(instance);
         rodManager = new RodManager(instance, getConfigManager());
+        db = new SQLite(instance);
+        db.createQuestNamesTable();
         questManager = new QuestManager(instance);
+
 
     registerCommands();
     registerListeners();
@@ -152,5 +156,8 @@ public final class MittenFishing extends JavaPlugin {
 
     public Database getDb() {
         return db;
+    }
+
+    public void test(){
     }
 }

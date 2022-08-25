@@ -1,4 +1,6 @@
 package me.afatcookie.mittenfishing.utils;
+import com.github.mittenmc.serverutils.Colors;
+import com.github.mittenmc.serverutils.ServerUtils;
 import me.afatcookie.mittenfishing.MittenFishing;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;
@@ -119,7 +121,7 @@ public class ItemCreator {
      */
     public ItemCreator setDisplayName(String displayName){
         ItemMeta im = getItemMeta();
-        im.setDisplayName(colorizeMessage(displayName));
+        im.setDisplayName(Colors.conv(displayName));
         this.itemStack.setItemMeta(im);
         return this;
     }
@@ -321,7 +323,7 @@ public class ItemCreator {
         assert im != null;
         List<String> lore = new ArrayList<>();
         for (String line : Lore){
-            lore.add(colorizeMessage(line));
+            lore.add(Colors.conv(line));
         }
         im.setLore(lore);
         this.itemStack.setItemMeta(im);
@@ -338,7 +340,7 @@ public class ItemCreator {
         assert im != null;
         List<String> lore = new ArrayList<>();
         for (String line : Lore){
-            lore.add(colorizeMessage(line));
+            lore.add(Colors.conv(line));
         }
         im.setLore(lore);
         this.itemStack.setItemMeta(im);
@@ -410,7 +412,7 @@ public class ItemCreator {
         }else{
             lore = new ArrayList<>();
         }
-        lore.add(colorizeMessage(line));
+        lore.add(Colors.conv(line));
         im.setLore(lore);
         this.itemStack.setItemMeta(im);
         return this;
@@ -432,7 +434,7 @@ public class ItemCreator {
         }else{
             lore = new ArrayList<>();
         }
-        lore.add(index, colorizeMessage(line));
+        lore.add(index, Colors.conv(line));
         im.setLore(lore);
         this.itemStack.setItemMeta(im);
         return this;
@@ -452,12 +454,12 @@ public class ItemCreator {
             lore = new ArrayList<>(im.getLore());
         }else{
             lore = new ArrayList<>();
-            lore.add(colorizeMessage(replacement));
+            lore.add(Colors.conv(replacement));
             return this;
         }
         for (String line : lore){
             if (line.contains(lineToReplace)){
-                lore.set(lore.indexOf(line), colorizeMessage(replacement));
+                lore.set(lore.indexOf(line), Colors.conv(replacement));
             }
         }
         im.setLore(lore);
@@ -693,7 +695,7 @@ public class ItemCreator {
         item = new ItemStack(material1);
         ItemMeta meta = item.getItemMeta();
         assert meta != null;
-        meta.setDisplayName(colorizeMessage(name));
+        meta.setDisplayName(Colors.conv(name));
         meta.setUnbreakable(unbreakable);
         if (Glowing) {
             meta.addEnchant(Enchantment.LURE, 3, false);
@@ -701,7 +703,7 @@ public class ItemCreator {
         meta.addItemFlags(ItemFlag.HIDE_UNBREAKABLE, ItemFlag.HIDE_ENCHANTS);
         ArrayList<String> updatedLore = new ArrayList<>(Lore.size());
         for (String line : Lore){
-            updatedLore.add(colorizeMessage(line));
+            updatedLore.add(Colors.conv(line));
         }
         meta.setLore(updatedLore);
         item.setItemMeta(meta);

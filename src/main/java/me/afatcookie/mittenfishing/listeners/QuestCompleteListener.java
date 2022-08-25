@@ -29,7 +29,6 @@ public class QuestCompleteListener implements Listener {
        final Quest quest = e.getQuest().getQuest();
        player.sendMessage(cm.getQuestCompleteMessage().replace("{quest_name}", quest.getName()));
        economy.depositPlayer(player, quest.getRewardValue());
-
        instance.getQuestManager().removePlayerQuest(e.getQuest());
 
     }

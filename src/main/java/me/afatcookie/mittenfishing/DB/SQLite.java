@@ -12,8 +12,6 @@ public class SQLite extends Database {
 
     String dbname;
 
-    private MittenFishing plugin;
-
     public SQLite(MittenFishing instance) {
         super(instance);
         dbname = "mittenfishing";

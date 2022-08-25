@@ -1,4 +1,5 @@
 package me.afatcookie.mittenfishing.fishing;
+import com.github.mittenmc.serverutils.ServerUtils;
 import me.afatcookie.mittenfishing.MittenFishing;
 import me.afatcookie.mittenfishing.files.ConfigManager;
 import me.afatcookie.mittenfishing.fishing.fishesmanger.Fish;
