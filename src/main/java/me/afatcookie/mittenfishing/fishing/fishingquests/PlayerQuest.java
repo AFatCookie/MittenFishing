@@ -1,5 +1,6 @@
 package me.afatcookie.mittenfishing.fishing.fishingquests;
 
+import me.afatcookie.mittenfishing.MittenFishing;
 import me.afatcookie.mittenfishing.customevents.QuestCompleteEvent;
 import org.bukkit.Bukkit;
 
@@ -17,6 +18,8 @@ public class PlayerQuest {
 
     private int progress;
 
+    private MittenFishing instance;
+
     private final Quest quest;
 
     public PlayerQuest(UUID player, Quest quest) {
@@ -24,10 +27,11 @@ public class PlayerQuest {
         this.quest = quest;
     }
 
-    public PlayerQuest(UUID player, Quest quest, int progress){
+    public PlayerQuest(UUID player, Quest quest, int progress, MittenFishing instance){
         this.player = player;
         this.quest = quest;
         this.progress = progress;
+        this.instance = instance;
     }
 
     public UUID getPlayer() {
@@ -50,6 +54,8 @@ public class PlayerQuest {
         this.progress +=  progress;
         if (hasCompletedQuest(this.progress)){
             Bukkit.getServer().getPluginManager().callEvent(new QuestCompleteEvent(player, this));
+        }else{
+            instance.getDb().savePlayerDataToTable(this);
         }
     }
 

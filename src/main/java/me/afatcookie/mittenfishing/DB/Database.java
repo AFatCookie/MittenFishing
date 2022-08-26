@@ -116,7 +116,6 @@ public abstract class Database {
     public PlayerQuest loadDataAfterRestart(Quest quest) {
         Connection conn = null;
         PreparedStatement ps = null;
-        ArrayList<PlayerQuest> playerDailiesProgress = new ArrayList<>();
         PlayerQuest playerQuest = null;
         try {
             conn = getSQLConnection();
@@ -125,7 +124,7 @@ public abstract class Database {
 
             while (resultSet.next()) {
                 System.out.println(quest.getName());
-                playerQuest = new PlayerQuest(UUID.fromString(resultSet.getString(1)), quest, resultSet.getInt(2));
+                playerQuest = new PlayerQuest(UUID.fromString(resultSet.getString(1)), quest, resultSet.getInt(2), plugin);
             }
 
         } catch (SQLException ex) {
