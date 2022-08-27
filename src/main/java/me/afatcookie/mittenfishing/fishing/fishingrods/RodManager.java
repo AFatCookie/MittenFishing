@@ -3,8 +3,10 @@ package me.afatcookie.mittenfishing.fishing.fishingrods;
 import me.afatcookie.mittenfishing.MittenFishing;
 import me.afatcookie.mittenfishing.files.ConfigManager;
 import me.afatcookie.mittenfishing.fishing.LootItem;
+import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.persistence.PersistentDataType;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -73,12 +75,7 @@ public class RodManager {
     ALlows me to check if the itemStack is from an ingredient of a fishingRod.
      */
     public boolean isAnIngredient(ItemStack itemStack){
-        for (Rod rod : fishingRods){
-            if (rod.getRecipe().containsValue(itemStack)){
-                return true;
-            }
-        }
-        return false;
+        return itemStack.getItemMeta().getPersistentDataContainer().has(new NamespacedKey(instance, "ingredient"), PersistentDataType.STRING);
     }
 
     /*

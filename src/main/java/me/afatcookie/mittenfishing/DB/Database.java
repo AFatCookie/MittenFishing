@@ -11,7 +11,6 @@ import java.util.logging.Level;
 import me.afatcookie.mittenfishing.MittenFishing;
 import me.afatcookie.mittenfishing.fishing.fishingquests.PlayerQuest;
 import me.afatcookie.mittenfishing.fishing.fishingquests.Quest;
-import org.bukkit.entity.Player;
 
 
 public abstract class Database {

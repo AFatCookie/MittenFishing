@@ -21,6 +21,7 @@ public class QuestConfig {
     public QuestConfig(MittenFishing instance) {
         this.instance = instance;
         setup();
+        getConfig().addDefault("day", System.currentTimeMillis());
         getConfig().addDefault("quests", new HashMap<>());
         getConfig().addDefault("sell-value", "&6Sell Value: ");
         getConfig().options().copyDefaults(true);

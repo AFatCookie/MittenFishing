@@ -1,7 +1,8 @@
 package me.afatcookie.mittenfishing;
 import me.afatcookie.mittenfishing.DB.Database;
 import me.afatcookie.mittenfishing.DB.SQLite;
-import me.afatcookie.mittenfishing.commands.CommandListener;
+import me.afatcookie.mittenfishing.commands.AdminCommandListener;
+import me.afatcookie.mittenfishing.commands.PlayerCommandListener;
 import me.afatcookie.mittenfishing.files.*;
 import me.afatcookie.mittenfishing.fishing.DiscoverableFish;
 import me.afatcookie.mittenfishing.fishing.FishingEvent;
@@ -66,7 +67,6 @@ public final class MittenFishing extends JavaPlugin {
         lp = new LootPool(instance);
         rodManager = new RodManager(instance, getConfigManager());
         db = new SQLite(instance);
-        db.createQuestNamesTable();
         questManager = new QuestManager(instance);
 
 
@@ -102,7 +102,8 @@ public final class MittenFishing extends JavaPlugin {
 
 
     private void registerCommands(){
-        getCommand("mf").setExecutor(new CommandListener());
+        getCommand("mf").setExecutor(new PlayerCommandListener());
+        getCommand("mfadmin").setExecutor(new AdminCommandListener());
     }
 
     private void registerListeners(){

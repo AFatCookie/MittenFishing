@@ -22,6 +22,7 @@ public class PlayerQuest {
 
     private final Quest quest;
 
+
     public PlayerQuest(UUID player, Quest quest) {
         this.player = player;
         this.quest = quest;

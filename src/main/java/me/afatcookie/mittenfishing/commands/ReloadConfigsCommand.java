@@ -1,6 +1,11 @@
 package me.afatcookie.mittenfishing.commands;
 import org.bukkit.ChatColor;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.util.StringUtil;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class ReloadConfigsCommand extends CommandBuilder{
     @Override
@@ -15,13 +20,17 @@ public class ReloadConfigsCommand extends CommandBuilder{
 
     @Override
     String getSyntax() {
-        return "/mf reload";
+        return "/mfadmin reload";
     }
 
     @Override
-    void execute(String[] args, Player player) {
-        if (args.length > 0) {
-            if (player.hasPermission("mittenfishing.admin") || player.isOp()) {
+    String getColoredSyntax() {
+        return ChatColor.GOLD + "Usage: " + getSyntax();
+    }
+
+    @Override
+    void preform(CommandSender commandSender, String[] strings) {
+        if (strings.length > 0) {
                 try {
 
                     instance.getFc().reload();
@@ -32,15 +41,25 @@ public class ReloadConfigsCommand extends CommandBuilder{
                     instance.getLp().reload(instance.getFc().getConfig(), instance.getFishDiscover());
                     instance.getRodManager().reload(instance.getRodConfig().getConfig());
                     instance.getQuestManager().reloadQuests(instance.getQc().getConfig(), "quests");
-                    player.sendMessage(ChatColor.AQUA + "Successfully reloaded Mitten Fishing!");
+                    commandSender.sendMessage(ChatColor.AQUA + "Successfully reloaded Mitten Fishing!");
                 } catch (IllegalArgumentException | NullPointerException exception) {
-                    player.sendMessage("Failed to reload Mitten Fishing!");
-                    player.sendMessage("Exception is in console.");
+                    commandSender.sendMessage("Failed to reload Mitten Fishing!");
+                    commandSender.sendMessage("Exception is in console.");
                     exception.printStackTrace();
                 }
-            }else{
-                player.sendMessage(ChatColor.RED  + "You don't have access to this command!, if this is an error, please contact an administrator");
             }
         }
+
+    @Override
+    List<String> getSubCommandArgs(Player player, String[] strings) {
+        ArrayList<String> subbies = new ArrayList<>();
+
+        if (strings.length == 1) {
+            StringUtil.copyPartialMatches(strings[0], adminSubbiesPass, subbies);
+        }
+
+        return null;
     }
+
+
 }

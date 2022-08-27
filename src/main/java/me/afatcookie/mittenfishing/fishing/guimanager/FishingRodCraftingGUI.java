@@ -3,6 +3,7 @@ package me.afatcookie.mittenfishing.fishing.guimanager;
 import me.afatcookie.mittenfishing.MittenFishing;
 import me.afatcookie.mittenfishing.files.ConfigManager;
 import me.afatcookie.mittenfishing.fishing.fishingrods.Rod;
+import me.afatcookie.mittenfishing.fishing.fishingrods.RodManager;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.ClickType;
@@ -10,7 +11,6 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 
 public class FishingRodCraftingGUI implements GUI {
@@ -23,10 +23,13 @@ public class FishingRodCraftingGUI implements GUI {
 
     private final ConfigManager configManager;
 
+    private final RodManager rodManager;
+
 
     public FishingRodCraftingGUI(MittenFishing instance) {
         this.instance = instance;
         this.configManager = instance.getConfigManager();
+        this.rodManager = instance.getRodManager();
         potentialCraft = new HashMap<>();
     }
 
@@ -59,23 +62,27 @@ public class FishingRodCraftingGUI implements GUI {
         }
         if (slot == 23 && clickedItem.getType() == Material.EMERALD_BLOCK){
             boolean isValid = false;
-        for (Rod rod : instance.getRodManager().getFishingRods()){
+        for (Rod rod : instance.getRodManager().getFishingRods()) {
             for (Map.Entry<Integer, ItemStack> loopRecipe : rod.getRecipe().entrySet()) {
                 for (Map.Entry<Integer, ItemStack> loopRecipe2 : potentialCraft.entrySet()) {
                     isValid = loopRecipe2.getKey().equals(loopRecipe.getKey());
                 }
             }
-            if (isValid){
+            if (isValid) {
                 if (potentialCraft.keySet().equals(rod.getRecipe().keySet())) {
-                    if (potentialCraft.entrySet().stream().allMatch(e -> e.getValue().getAmount() >= rod.getRecipe().get(e.getKey()).getAmount())) {
-                        if (potentialCraft.entrySet().stream().allMatch(e -> e.getValue().getType() == rod.getRecipe().get(e.getKey()).getType())) {
-                            inv.setItem(25, rod.getRod());
-                            return;
+                    if (potentialCraft.entrySet().stream().allMatch(e -> rodManager.isAnIngredient(e.getValue()) && rodManager.isAnIngredient(rod.getRecipe().get(e.getKey())))) {
+                        if (potentialCraft.entrySet().stream().allMatch(e -> e.getValue().isSimilar(rod.getRecipe().get(e.getKey())))){
+                        if (potentialCraft.entrySet().stream().allMatch(e -> e.getValue().getAmount() >= rod.getRecipe().get(e.getKey()).getAmount())) {
+                            if (potentialCraft.entrySet().stream().allMatch(e -> e.getValue().getType() == rod.getRecipe().get(e.getKey()).getType())) {
+                                inv.setItem(25, rod.getRod());
+                                return;
+                            }
+                        }
                         }
                     }
-                    }
                 }
-                }
+            }
+        }
             }else {
             if (isNotGlass(inventory, slot)) {
                 inv.setItem(25, new ItemStack(Material.RED_STAINED_GLASS_PANE, 1));
@@ -127,23 +134,5 @@ public class FishingRodCraftingGUI implements GUI {
 
     private boolean isNotGlass(Inventory inventory, int slot){
       return  inventory.getItem(slot) != null && inventory.getItem(slot).getType() != Material.AIR && !inventory.getItem(slot).getType().toString().contains("PANE");
-    }
-
-    private boolean compareMaps(Map<Integer, ItemStack> map1, Map<Integer, ItemStack> map2){
-        if (map1 == null || map2 == null){
-            return false;
-        }
-        for (int i : map1.keySet()){
-            if (!map1.get(i).equals(map2.get(i))){
-                return false;
-            }
-            for (int j : map2.keySet()){
-                if (!map2.get(j).equals(map1.get(j))){
-                    return false;
-                }
-
-            }
-        }
-        return true;
     }
 }

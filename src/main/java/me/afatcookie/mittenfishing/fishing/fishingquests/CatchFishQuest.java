@@ -10,8 +10,8 @@ public class CatchFishQuest extends Quest{
 
     private final int amountToBeCaught;
 
-    public CatchFishQuest(String name, List<String> description, double rewardValue, double xpValue, Fish fish, int amountToBeCaught) {
-        super(name, description, rewardValue, xpValue);
+    public CatchFishQuest(String name, List<String> description, double rewardValue, double xpValue, Fish fish, int questID, int amountToBeCaught) {
+        super(name, description, rewardValue, xpValue, questID);
         this.fishToBeCaught = fish;
         this.amountToBeCaught = amountToBeCaught;
     }

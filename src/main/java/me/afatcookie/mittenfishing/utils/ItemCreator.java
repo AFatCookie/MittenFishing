@@ -1,6 +1,5 @@
 package me.afatcookie.mittenfishing.utils;
 import com.github.mittenmc.serverutils.Colors;
-import com.github.mittenmc.serverutils.ServerUtils;
 import me.afatcookie.mittenfishing.MittenFishing;
 import org.bukkit.*;
 import org.bukkit.attribute.Attribute;

@@ -8,8 +8,8 @@ public class SellQuest extends Quest{
 
     private final double amountToMake;
 
-    public SellQuest(String name, List<String> description, double rewardValue, double xpValue, double amountToMake) {
-        super(name, description, rewardValue, xpValue);
+    public SellQuest(String name, List<String> description, double rewardValue, double xpValue, int questID, double amountToMake) {
+        super(name, description, rewardValue, xpValue, questID);
         this.amountToMake = amountToMake;
     }
 

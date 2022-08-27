@@ -11,3 +11,8 @@ commands:
   mf:
     description: default start for MittenFishing
     usage: /mf <command>
+  mfadmin:
+    description: "MittenFishing admin commands"
+    usage: /mfadmin <command>
+    permission: mittenfishing.admin
+    permission-message: Insufficient permission

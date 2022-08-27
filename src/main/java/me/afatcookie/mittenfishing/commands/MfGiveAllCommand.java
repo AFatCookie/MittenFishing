@@ -2,8 +2,13 @@ package me.afatcookie.mittenfishing.commands;
 
 import me.afatcookie.mittenfishing.fishing.LootItem;
 import me.afatcookie.mittenfishing.fishing.fishingrods.Rod;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.util.StringUtil;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This gives all Mitten Fishing related items to the command sender. Name: GiveItems, Description: gives all the items in the game,
@@ -22,13 +27,19 @@ public class MfGiveAllCommand extends CommandBuilder{
 
     @Override
     String getSyntax() {
-        return "/MF GiveAll";
+        return "/MFAdmin GiveAll";
     }
 
     @Override
-    void execute(String[] args, Player player) {
-        if (player.hasPermission("mittenfishing.admin") || player.isOp()) {
-            if (args.length > 0) {
+    String getColoredSyntax() {
+        return null;
+    }
+
+    @Override
+    void preform(CommandSender commandSender, String[] strings) {
+        if (!(commandSender instanceof  Player)) return;
+        Player player = (Player) commandSender;
+            if (strings.length > 0) {
                 for (LootItem lootItem : lp.getLootPool()) {
                     player.getInventory().addItem(lootItem.getItem());
                 }
@@ -36,12 +47,6 @@ public class MfGiveAllCommand extends CommandBuilder{
                     player.getInventory().addItem(ingredient);
                 }
 
-/*
-            for (Fish fish : instance.getFishDiscover().getFishes()){
-                player.getInventory().addItem(fish.getFishItem());
-            }
-
- */
                 if (instance.getRodManager().getFishingRods().isEmpty()) return;
                 for (Rod rod : instance.getRodManager().getFishingRods()) {
                     player.getInventory().addItem(rod.getRod());
@@ -49,5 +54,17 @@ public class MfGiveAllCommand extends CommandBuilder{
             }
 
         }
+
+    @Override
+    List<String> getSubCommandArgs(Player player, String[] strings) {
+        ArrayList<String> subbies = new ArrayList<>();
+
+        if (strings.length == 1) {
+            StringUtil.copyPartialMatches(strings[0], adminSubbiesPass, subbies);
+        }
+
+        return null;
     }
+
+
 }

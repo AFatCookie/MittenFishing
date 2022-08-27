@@ -12,11 +12,14 @@ public class Quest {
 
     private double xpValue;
 
-    public Quest(String name, List<String> description, double rewardValue, double xpValue) {
+    private int questID;
+
+    public Quest(String name, List<String> description, double rewardValue, double xpValue, int questID) {
         this.name = name;
         this.description = description;
         this.rewardValue = rewardValue;
         this.xpValue = xpValue;
+        this.questID = questID;
     }
 
     public Quest(Quest ob){
@@ -24,6 +27,7 @@ public class Quest {
         this.description = ob.description;
         this.rewardValue = ob.rewardValue;
         this.xpValue = ob.xpValue;
+        this.questID = ob.questID;
     }
 
     public String getName() {
@@ -56,5 +60,13 @@ public class Quest {
 
     public void setXpValue(double xpValue) {
         this.xpValue = xpValue;
+    }
+
+    public void setQuestID(int questID) {
+        this.questID = questID;
+    }
+
+    public int getQuestID() {
+        return questID;
     }
 }

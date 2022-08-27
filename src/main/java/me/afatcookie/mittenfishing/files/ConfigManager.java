@@ -292,12 +292,20 @@ public class ConfigManager {
 
     //QUEST CONFIG
     //////////////////////////////////////////////////////////////
+
+    public long getDay(){
+        return questConfig.getConfig().getLong("day");
+    }
     public String getQuestName(String path){
         return validateStringInConfig(questConfig.getConfig(), path + ".name");
     }
 
     public List<String> getQuestDescription(String path){
         return validateStringListInConfig(questConfig.getConfig(), path + ".lore");
+    }
+
+    public int getQuestID(String path){
+        return validateIntInConfig(questConfig.getConfig(), path + ".id");
     }
 
     public double getQuestRewardValue(String path){

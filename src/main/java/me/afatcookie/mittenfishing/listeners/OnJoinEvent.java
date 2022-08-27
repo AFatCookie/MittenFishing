@@ -21,9 +21,7 @@ public class OnJoinEvent implements Listener {
     @EventHandler
     public void onJoinEvent(PlayerJoinEvent e){
         discoverableFish.addPlayerToHashMap(e.getPlayer());
-        if (!questManager.getHadQuests().contains(e.getPlayer().getUniqueId())){
-            questManager.assignPlayerQuests(e.getPlayer().getUniqueId());
-        }
+        questManager.onPlayerLoad(e.getPlayer());
         System.out.println("has already had");
     }
 }

@@ -3,6 +3,7 @@ import me.afatcookie.mittenfishing.MittenFishing;
 import me.afatcookie.mittenfishing.utils.ItemCreator;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.inventory.ItemStack;
 
@@ -73,6 +74,7 @@ public class Rod {
                             .addGlow(configuration.getBoolean(ingredientsPath + ".glowing")).setLore(configuration.getStringList(ingredientsPath + ".lore")).getItemStack();
                 }
                 instance.getLp().getAllIngredients().add(ingredient);
+                ingredient = new ItemCreator(ingredient).setPDCString(new NamespacedKey(instance, "ingredient"), "ingredient").getItemStack();
                 weight = configuration.getInt(ingredientsPath + ".weight");
                 if (weight <= -1) weight = 1;
                 if (!configuration.getIntegerList(ingredientsPath + ".slots").isEmpty()) {

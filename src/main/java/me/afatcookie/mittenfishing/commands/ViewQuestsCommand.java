@@ -2,7 +2,13 @@ package me.afatcookie.mittenfishing.commands;
 
 import me.afatcookie.mittenfishing.fishing.fishingquests.PlayerQuest;
 import me.afatcookie.mittenfishing.fishing.fishingquests.Quest;
+import org.bukkit.ChatColor;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.util.StringUtil;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class ViewQuestsCommand extends CommandBuilder{
     @Override
@@ -21,8 +27,15 @@ public class ViewQuestsCommand extends CommandBuilder{
     }
 
     @Override
-    void execute(String[] args, Player player) {
-        if (args.length > 0){
+    String getColoredSyntax() {
+        return ChatColor.GOLD + "Usage: " + getSyntax();
+    }
+
+    @Override
+    void preform(CommandSender commandSender, String[] strings) {
+        if (!(commandSender instanceof  Player)) return;
+        Player player = (Player) commandSender;
+        if (strings.length > 0){
             if (instance.getQuestManager().getPlayersQuest().isEmpty()) System.out.println("EMPTY PLAYER QUEST");
             for (PlayerQuest quest : instance.getQuestManager().getPlayersQuest()){
                 if (quest == null) continue;
@@ -39,4 +52,17 @@ public class ViewQuestsCommand extends CommandBuilder{
             }
         }
     }
+
+    @Override
+    List<String> getSubCommandArgs(Player player, String[] strings) {
+        ArrayList<String> subbies = new ArrayList<>();
+
+        if (strings.length == 1) {
+            StringUtil.copyPartialMatches(strings[0], subbiesPass, subbies);
+        }
+
+        return null;
+    }
+
+
 }

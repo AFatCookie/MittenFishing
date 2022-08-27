@@ -1,5 +1,6 @@
 package me.afatcookie.mittenfishing.fishing.fishingquests;
 
+import com.github.mittenmc.serverutils.RepeatingTask;
 import me.afatcookie.mittenfishing.MittenFishing;
 import me.afatcookie.mittenfishing.files.ConfigManager;
 import me.afatcookie.mittenfishing.fishing.LootItem;
@@ -10,7 +11,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.persistence.PersistentDataType;
-import org.bukkit.scheduler.BukkitRunnable;
+
 import java.util.*;
 
 public class QuestManager {
@@ -27,6 +28,8 @@ public class QuestManager {
 
     private final HashSet<PlayerQuest> playersQuest;
 
+    private  long day;
+
     /**
      * This clears initializes all the data holding for the quests, reloads the quests from config, sets new daily quests,
      * assigns them to the current players online, and starts the timer which will reset the quests at 8pm every day.
@@ -40,19 +43,9 @@ public class QuestManager {
         activeQuests = new ArrayList<>();
         this.playersQuest = new HashSet<>();
         this.hadQuests = new ArrayList<>();
+        this.day = instance.getConfigManager().getDay();
         restoreDailyQuestData();
-        new BukkitRunnable() {
-
-            @Override
-            public void run() {
-                for (Quest quest : activeQuests){
-                    instance.getDb().deleteTable(quest);
-                }
-                getNewDailies(quests);
-                assignQuestToOnline();
-                System.out.println(activeQuests);
-            }
-        }.runTaskTimer(instance, timeDelayUntilNextQuests() / 50, 24 * 60 * 60 * 20);
+        startNewDayChecker();
     }
 
 
@@ -98,6 +91,7 @@ public class QuestManager {
         double moneyValue = configManager.getQuestRewardValue(path);
         double xpValue = configManager.getQuestXpValue(path);
         String questType = configManager.getQuestType(path);
+        int questId = configManager.getQuestID(path);
         int amount = configManager.getQuestAmountToBeCaught(path);
         switch (questType) {
             case "catchfish":
@@ -120,14 +114,14 @@ public class QuestManager {
                         fish.setSellValue(fishSellValue, configuration);
                         instance.getLp().getLootPool().add(new LootItem(fish.getRarity(), fish.getRarity().getWeight(), fish.getFishItem(), instance));
                     }
-                    quest = new CatchFishQuest(name, description, moneyValue, xpValue, fish, amount);
+                    quest = new CatchFishQuest(name, description, moneyValue, xpValue, fish, questId, amount);
                     quests.add(quest);
                     System.out.println("Created Quest: " + quest.getName());
                 }
                 break;
             case "sell":
                 double amountToMake = configManager.getAmountToMake(path);
-                quest = new SellQuest(name, description, moneyValue, xpValue, amountToMake);
+                quest = new SellQuest(name, description, moneyValue, xpValue, questId, amountToMake);
                 quests.add(quest);
                 System.out.println("Created Quest: " + quest.getName());
                 break;
@@ -174,6 +168,30 @@ public class QuestManager {
             }
         } else {
             activeQuests.addAll(quests);
+        }
+    }
+    private void startNewDayChecker() {
+        new RepeatingTask(instance, 20, 20) {
+            @Override
+            public void run() {
+                if (day != System.currentTimeMillis() / 86400000) {
+                    day = System.currentTimeMillis() / 86400000;
+                    getNewDailies(quests);
+                    assignQuestToOnline();
+                }
+            }
+        };
+    }
+
+    /**
+     * To be called when the player joins to determine if their daily quests should reset.
+     * If so, their daily quests will be reset.
+     * @param loadedPlayer The player who joined
+     */
+    public void onPlayerLoad(Player loadedPlayer) {
+        //If the last day the player joined was not today
+        if (loadedPlayer.getLastPlayed() / 86400000 != System.currentTimeMillis() / 86400000) {
+            assignPlayerQuests(loadedPlayer.getUniqueId());
         }
     }
 
@@ -273,6 +291,9 @@ public class QuestManager {
     public void assignPlayerQuests(UUID player) {
         if (Bukkit.getOnlinePlayers().isEmpty()) return;
         if (hadQuests.contains(player)) return;
+        for (PlayerQuest playerQuest : playersQuest){
+            if (playerQuest.getPlayer() == player) return;
+        }
         for (Quest quest : activeQuests) {
             playersQuest.add(new PlayerQuest(player, quest));
         }
@@ -309,24 +330,6 @@ public class QuestManager {
         return activeQuests;
     }
 
-    /**
-     * This will return at 8pm every night and update the quests.
-     *
-     * @return the time it'll wait until next quests.
-     */
-    private long timeDelayUntilNextQuests() {
-        Calendar calendar = Calendar.getInstance();
-        if (calendar.get(Calendar.AM_PM) == Calendar.PM || calendar.get(Calendar.HOUR) >= 8) {
-            calendar.add(Calendar.DATE, 1);
-        }
-        calendar.set(Calendar.AM_PM, Calendar.AM);
-        calendar.set(Calendar.HOUR, 8);
-        long timeOfNextQuests = calendar.getTimeInMillis();
-        long current = System.currentTimeMillis();
-        calendar.setTimeInMillis(current);
-        return timeOfNextQuests - current;
-    }
-
     /*
     Currently Working on, but the goal of this is whenever the server restarts, it saves the names of the active quests to
     the data config, which will allow me to reinstitute back into the activequests on unreload, and then check for those
@@ -334,16 +337,16 @@ public class QuestManager {
     the names of quest, or something else.
      */
     public void saveDailiesOnServerClose() {
-        instance.getDb().clearQuestNameTable();
         if (activeQuests.isEmpty()) return;
         for (Quest quest : activeQuests){
-            instance.getDb().saveToQuestNameTable(quest);
+            instance.getDataConfig().getConfig().set(quest.getName(), quest.getQuestID());
         }
         if (playersQuest.isEmpty()) return;
         for (PlayerQuest playerQuest : playersQuest){
             if (playerQuest == null) continue;
             instance.getDb().savePlayerDataToTable(playerQuest);
         }
+
 
     }
 
@@ -352,7 +355,11 @@ public class QuestManager {
      */
     private void restoreDailyQuestData() {
         reloadQuests(configManager.getQuestConfig().getConfig(), "quests");
-        ArrayList<String> savedQuests = instance.getDb().loadCurrentDailiesAfterRestart();
+        ArrayList<String> savedQuests = new ArrayList<>();
+        for (Quest quest : quests){
+            if (instance.getDataConfig().getConfig().getString(quest.getName()) == null || !instance.getDataConfig().getConfig().contains(quest.getName())) continue;
+            savedQuests.add(quest.getName());
+        }
         ArrayList<PlayerQuest> savedData = new ArrayList<>();
         if (savedQuests.isEmpty()){
             System.out.println("creating new quests");
