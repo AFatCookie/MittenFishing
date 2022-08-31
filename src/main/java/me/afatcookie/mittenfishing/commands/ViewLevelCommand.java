@@ -1,46 +1,44 @@
 package me.afatcookie.mittenfishing.commands;
 
-import com.github.mittenmc.serverutils.UUIDConverter;
-import me.afatcookie.mittenfishing.fishing.fishingquests.PlayerQuest;
-import me.afatcookie.mittenfishing.fishing.fishingquests.Quest;
-import me.afatcookie.mittenfishing.fishing.guimanager.ActiveQuestDisplayGUI;
+import me.afatcookie.mittenfishing.fishing.fishinglevels.PlayerLevel;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.util.StringUtil;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
 
-public class ViewQuestsCommand extends CommandBuilder{
+public class ViewLevelCommand extends CommandBuilder{
     @Override
     String getName() {
-        return "viewQuests";
+        return "viewLevel";
     }
 
     @Override
     String getDescription() {
-        return "Views all active quests for the day";
+        return "Shows the level to commandSender";
     }
 
     @Override
     String getSyntax() {
-        return "/mf viewQuests";
+        return "/mf viewLevel";
     }
 
     @Override
     String getColoredSyntax() {
-        return ChatColor.GOLD + "Usage: " + getSyntax();
+        return ChatColor.YELLOW + "Usage: " + getSyntax();
     }
 
     @Override
     void preform(CommandSender commandSender, String[] strings) {
-        if (!(commandSender instanceof  Player)) return;
+        if (!(commandSender instanceof Player)){
+            return;
+        }
         Player player = (Player) commandSender;
-        if (strings.length > 0){
-            player.openInventory(new ActiveQuestDisplayGUI(instance, player).getInventory());
+        if (strings.length > 0) {
+            player.sendMessage(ChatColor.GOLD + "Current Level: " + instance.getLevelManager().getPlayerLevel(player).getLevel());
+            player.sendMessage(ChatColor.GOLD + "Till next level: " + instance.getLevelManager().getPlayerLevel(player).getToNextLevel());
         }
     }
 
@@ -54,6 +52,4 @@ public class ViewQuestsCommand extends CommandBuilder{
 
         return null;
     }
-
-
 }

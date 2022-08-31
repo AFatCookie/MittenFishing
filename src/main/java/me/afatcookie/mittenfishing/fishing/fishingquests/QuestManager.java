@@ -1,18 +1,22 @@
 package me.afatcookie.mittenfishing.fishing.fishingquests;
 
 import com.github.mittenmc.serverutils.RepeatingTask;
+import com.github.mittenmc.serverutils.UUIDConverter;
 import me.afatcookie.mittenfishing.MittenFishing;
 import me.afatcookie.mittenfishing.files.ConfigManager;
 import me.afatcookie.mittenfishing.fishing.LootItem;
 import me.afatcookie.mittenfishing.fishing.fishesmanger.Fish;
 import me.afatcookie.mittenfishing.fishing.fishesmanger.Rarity;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataType;
 
 import java.util.*;
+import java.util.logging.Level;
 
 public class QuestManager {
 
@@ -44,8 +48,9 @@ public class QuestManager {
         this.playersQuest = new HashSet<>();
         this.hadQuests = new ArrayList<>();
         this.day = instance.getConfigManager().getDay();
-        restoreDailyQuestData();
+        reloadQuests(configManager.getQuestConfig().getConfig(), "quests");
         startNewDayChecker();
+        restoreDailyQuestData();
     }
 
 
@@ -93,6 +98,7 @@ public class QuestManager {
         String questType = configManager.getQuestType(path);
         int questId = configManager.getQuestID(path);
         int amount = configManager.getQuestAmountToBeCaught(path);
+        ItemStack questItem = new ItemStack(Material.getMaterial(instance.getQuestConfig().getConfig().getString(path + ".questitem")), 1);
         switch (questType) {
             case "catchfish":
                 if (configuration.getConfigurationSection(path + ".questfish") != null) {
@@ -112,18 +118,18 @@ public class QuestManager {
                         fish.getFish(configuration).getItemMeta().getPersistentDataContainer().set(new NamespacedKey(instance, "quest"), PersistentDataType.STRING, "TRUE");
                         fish.setFishingXpValue(fishXpValue, configuration);
                         fish.setSellValue(fishSellValue, configuration);
-                        instance.getLp().getLootPool().add(new LootItem(fish.getRarity(), fish.getRarity().getWeight(), fish.getFishItem(), instance));
+                        instance.getLootPool().getLootPool().add(new LootItem(fish.getRarity(), fish.getRarity().getWeight(), fish.getFishItem(), instance));
                     }
-                    quest = new CatchFishQuest(name, description, moneyValue, xpValue, fish, questId, amount);
+                    quest = new CatchFishQuest(name, description, moneyValue, xpValue, fish, questId, amount, questItem);
                     quests.add(quest);
-                    System.out.println("Created Quest: " + quest.getName());
+                    Bukkit.getLogger().log(Level.INFO, "[MittenFishing] Created Quest: " + quest.getName());
                 }
                 break;
             case "sell":
                 double amountToMake = configManager.getAmountToMake(path);
-                quest = new SellQuest(name, description, moneyValue, xpValue, questId, amountToMake);
+                quest = new SellQuest(name, description, moneyValue, xpValue, questId, amountToMake, questItem);
                 quests.add(quest);
-                System.out.println("Created Quest: " + quest.getName());
+                Bukkit.getLogger().log(Level.INFO, "[MittenFishing] Created Quest: " + quest.getName());
                 break;
 
         }
@@ -151,18 +157,17 @@ public class QuestManager {
         activeQuests.clear();
         hadQuests.clear();
         playersQuest.clear();
-        instance.getLp().reload(instance.getFc().getConfig(), instance.getFishDiscover());
+        instance.getLootPool().reload(instance.getFishConfig().getConfig(), instance.getFishDiscover());
         if (quests.isEmpty()) return;
         if (quests.size() >= 3) {
             while (activeQuests.size() < 3) {
                 Random random = new Random();
                 int randomNumber = random.nextInt(quests.size());
                 if (!activeQuests.contains(quests.get(randomNumber))) {
-                    activeQuests.add(quests.get(randomNumber));
-                    instance.getDb().createQuestTable(quests.get(randomNumber));
+                    addToDailies(quests.get(randomNumber));
                     if (quests.get(randomNumber) instanceof CatchFishQuest) {
                         Fish fishToBeCaught = ((CatchFishQuest) quests.get(randomNumber)).getFishToBeCaught();
-                        instance.getLp().getLootPool().add(new LootItem(fishToBeCaught.getRarity(), fishToBeCaught.getRarity().getWeight(), fishToBeCaught.getFishItem(), instance));
+                        instance.getLootPool().getLootPool().add(new LootItem(fishToBeCaught.getRarity(), fishToBeCaught.getRarity().getWeight(), fishToBeCaught.getFishItem(), instance));
                     }
                 }
             }
@@ -176,6 +181,8 @@ public class QuestManager {
             public void run() {
                 if (day != System.currentTimeMillis() / 86400000) {
                     day = System.currentTimeMillis() / 86400000;
+                    instance.getQuestConfig().getConfig().set("day", day);
+                    instance.getDataBase().clearQuestTable();
                     getNewDailies(quests);
                     assignQuestToOnline();
                 }
@@ -190,7 +197,7 @@ public class QuestManager {
      */
     public void onPlayerLoad(Player loadedPlayer) {
         //If the last day the player joined was not today
-        if (loadedPlayer.getLastPlayed() / 86400000 != System.currentTimeMillis() / 86400000) {
+        if (loadedPlayer.getLastPlayed() / 86400000 != System.currentTimeMillis() / 86400000 || !hadQuests.contains(loadedPlayer.getUniqueId())) {
             assignPlayerQuests(loadedPlayer.getUniqueId());
         }
     }
@@ -217,6 +224,16 @@ public class QuestManager {
      * @param player Player to check for Sell Quests
      * @return ArrayList of sell quests the player has active.
      */
+
+    public ArrayList<PlayerQuest> getAllOfPlayerQuest(Player player){
+        ArrayList<PlayerQuest> playerQuests = new ArrayList<>();
+        for (PlayerQuest quest : playersQuest){
+            if (quest.getPlayer().equals(player.getUniqueId())) {
+                playerQuests.add(quest);
+            }
+        }
+        return playerQuests;
+    }
     public ArrayList<PlayerQuest> getPlayerSellQuest(Player player) {
         ArrayList<PlayerQuest> playersQuests = new ArrayList<>();
         for (PlayerQuest playerQuest : playersQuest) {
@@ -295,7 +312,7 @@ public class QuestManager {
             if (playerQuest.getPlayer() == player) return;
         }
         for (Quest quest : activeQuests) {
-            playersQuest.add(new PlayerQuest(player, quest));
+            playersQuest.add(new PlayerQuest(player, quest, 0, instance));
         }
         hadQuests.add(player);
     }
@@ -308,7 +325,7 @@ public class QuestManager {
         if (Bukkit.getOnlinePlayers().isEmpty()) return;
         for (Player player : Bukkit.getOnlinePlayers()) {
             for (Quest quest : activeQuests) {
-                playersQuest.add(new PlayerQuest(player.getUniqueId(), quest));
+                playersQuest.add(new PlayerQuest(player.getUniqueId(), quest, 0, instance));
             }
             hadQuests.add(player.getUniqueId());
         }
@@ -321,9 +338,9 @@ public class QuestManager {
      * @param playerQuest Player quest to remove.
      */
     public void removePlayerQuest(PlayerQuest playerQuest) {
+        System.out.println(playerQuest);
         playersQuest.remove(playerQuest);
-        if (!instance.getDb().findPlayer(playerQuest.getQuest(), playerQuest.getPlayer()))  return;
-        instance.getDb().removePlayer(playerQuest.getQuest(), playerQuest.getPlayer());
+       instance.getDataBase().removePlayer(playerQuest);
     }
 
     public ArrayList<Quest> getActiveQuests() {
@@ -339,12 +356,31 @@ public class QuestManager {
     public void saveDailiesOnServerClose() {
         if (activeQuests.isEmpty()) return;
         for (Quest quest : activeQuests){
-            instance.getDataConfig().getConfig().set(quest.getName(), quest.getQuestID());
+            if (instance.getDataConfig().getConfig().getConfigurationSection("data") == null){
+                instance.getDataConfig().getConfig().createSection("data", new HashMap<>());
+            }
+            instance.getDataConfig().getConfig().set("data." + removeWhiteAndPunctuation(quest.getName()), quest.getQuestID());
         }
-        if (playersQuest.isEmpty()) return;
+        instance.getDataConfig().save();
+        if (playersQuest.isEmpty()){
+            Bukkit.getLogger().log(Level.WARNING, "[MittenFishing] No available player quests to save.");
+            return;
+        }
         for (PlayerQuest playerQuest : playersQuest){
-            if (playerQuest == null) continue;
-            instance.getDb().savePlayerDataToTable(playerQuest);
+            if (playerQuest.getPlayer() == null){
+                System.out.println("Broken UUID");
+                continue;
+            }
+            if (playerQuest.getQuest().getQuestID() < 1){
+                System.out.println("Broken Quest ID");
+                continue;
+            }
+            if (playerQuest.getProgress() < 0){
+                System.out.println("Broken Progress");
+                continue;
+            }
+            System.out.println(playerQuest.getPlayer());
+            instance.getDataBase().saveToQuestTable(playerQuest);
         }
 
 
@@ -354,35 +390,39 @@ public class QuestManager {
     This method will add the quests back into dailies, assuming that the quest matches with the quest name.
      */
     private void restoreDailyQuestData() {
-        reloadQuests(configManager.getQuestConfig().getConfig(), "quests");
-        ArrayList<String> savedQuests = new ArrayList<>();
+        if (!activeQuests.isEmpty()) return;
+        ArrayList<Quest> savedQuests = new ArrayList<>();
+        ArrayList<PlayerQuest> savedPlayerData = new ArrayList<>();
         for (Quest quest : quests){
-            if (instance.getDataConfig().getConfig().getString(quest.getName()) == null || !instance.getDataConfig().getConfig().contains(quest.getName())) continue;
-            savedQuests.add(quest.getName());
-        }
-        ArrayList<PlayerQuest> savedData = new ArrayList<>();
-        if (savedQuests.isEmpty()){
-            System.out.println("creating new quests");
-            getNewDailies(quests);
-            return;
-        }
-        for (String string : savedQuests){
-            for (Quest quest : quests){
-                if (quest.getName().toLowerCase().replace(" ", "_").replace(".", "_").equalsIgnoreCase(string)){
-                    activeQuests.add(quest);
-                    System.out.println("added to active quests, attempting to add to saved data");
-                    if (instance.getDb().loadDataAfterRestart(quest) == null){
-                        Bukkit.getLogger().warning("Failed to grab data for a player from sqlLite");
+            if (instance.getDataConfig().getConfig().getConfigurationSection("data") != null) {
+                instance.getDataConfig().getConfig().getConfigurationSection("data").getKeys(false).forEach(key -> {
+                    int questID = instance.getDataConfig().getConfig().getInt("data." + key);
+                    if (questID == quest.getQuestID()) {
+                        savedQuests.add(quest);
                     }
-                   savedData.add(instance.getDb().loadDataAfterRestart(quest));
-                }
+                });
             }
         }
-        playersQuest.addAll(savedData);
-        System.out.println("saved data");
+        if (savedQuests.isEmpty()){
+            Bukkit.getLogger().log(Level.WARNING, "[MittenFishing] No available quests to check for, creating new ones.");
+            getNewDailies(quests);
+            assignQuestToOnline();
+            return;
+        }
+        this.playersQuest.clear();
+        for (Quest quest : savedQuests){
+            if (instance.getDataBase().getPlayerDataFromQuestTable(quest) == null) continue;
+            savedPlayerData.add(instance.getDataBase().getPlayerDataFromQuestTable(quest));
+            System.out.println(instance.getDataBase().getPlayerDataFromQuestTable(quest).getProgress());
+        }
+        playersQuest.addAll(savedPlayerData);
     }
 
     public ArrayList<UUID> getHadQuests() {
         return hadQuests;
+    }
+
+    private String removeWhiteAndPunctuation(String string){
+        return string.replaceAll("\\p{Punct}", "").replace(" ", "-");
     }
 }

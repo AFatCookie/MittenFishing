@@ -31,6 +31,8 @@ public class Fish{
     private boolean shouldDisplayRarity = true;
     private boolean shouldDisplayValue = true;
 
+    private boolean shouldDisplayLvlReq = true;
+
     private boolean canbeSold = true;
     private boolean shouldBroadcastMessage = false;
 
@@ -42,6 +44,8 @@ public class Fish{
     private final String pathWay;
 
     private final MittenFishing instance;
+
+    private int level;
 
     private final ConfigManager cm;
 
@@ -75,6 +79,18 @@ public class Fish{
       return SkullCreator.itemFromUrl(configuration.getString(pathWay + ".url"));
     }
 
+    private void setLevel(FileConfiguration configuration){
+        if (configuration.getInt(pathWay + ".level") == -1 || !configuration.contains(pathWay + ".level") && !cm.rarityBasedLvlValue()){
+            level = 0;
+            return;
+        }
+        if (cm.rarityBasedLvlValue()){
+            level = cm.getRarityLevelValue(rarity);
+            return;
+        }
+        level = configuration.getInt(pathWay + ".level");
+    }
+
     /**
      * Checks if the fish will have a material value, 64bit value, url value, and glow value. Glow value will only work
      * if the item is a Material other than PLAYER_HEAD. It will then create a fish itemStack with the configs name, lore etc.
@@ -92,6 +108,8 @@ public class Fish{
         displayValue(configuration);
         isShouldBroadcastMessage(configuration);
         canBeSold(configuration);
+        setShouldDisplayLvlReq(configuration);
+        setLevel(configuration);
         ItemCreator ic;
         if (isURL){
             ic = new ItemCreator(setItemWithURL(configuration)).setDisplayName(name).setLore(configuration.getStringList(pathWay + ".lore"));
@@ -136,6 +154,10 @@ public class Fish{
         if (shouldDisplayValue){
             ic.addLoreLine(configuration.getString("sell-value") + sellValue);
         }
+
+        if (shouldDisplayLvlReq){
+            ic.addLoreLine("&cLevel needed to catch: " + level);
+        }
         if (isMaterial && shouldGlow){
             ic.addGlow(true);
         }
@@ -145,6 +167,7 @@ public class Fish{
         if (canbeSold){
             ic.setPDCDouble(new NamespacedKey(instance, "value"), sellValue);
         }
+        ic.setPDCInteger(new NamespacedKey(instance, "levelreq"), level);
 
         ic.setPDCDouble(new NamespacedKey(instance, "xp-value"), fishingXpValue);
     }
@@ -183,6 +206,12 @@ public class Fish{
             shouldGlow = false;
         }
         shouldGlow = configuration.getBoolean(pathWay + ".glow");
+    }
+
+    private void setShouldDisplayLvlReq(FileConfiguration configuration){
+        if (!configuration.getBoolean(pathWay + ".displaylevelreq") && configuration.contains(pathWay + ".displaylevelreq")) {
+            shouldDisplayLvlReq = false;
+        }
     }
 
     /**
@@ -231,6 +260,10 @@ public class Fish{
 
     public Material getMaterial() {
         return material;
+    }
+
+    public int getLevel() {
+        return level;
     }
 
     public double getSellValue() {

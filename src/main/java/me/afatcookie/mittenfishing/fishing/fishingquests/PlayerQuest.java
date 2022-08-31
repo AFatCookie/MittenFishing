@@ -56,7 +56,7 @@ public class PlayerQuest {
         if (hasCompletedQuest(this.progress)){
             Bukkit.getServer().getPluginManager().callEvent(new QuestCompleteEvent(player, this));
         }else{
-            instance.getDb().savePlayerDataToTable(this);
+            instance.getDataBase().savePlayerToQuestTable(this);
         }
     }
 

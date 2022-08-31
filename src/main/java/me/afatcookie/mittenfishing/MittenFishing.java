@@ -7,13 +7,11 @@ import me.afatcookie.mittenfishing.files.*;
 import me.afatcookie.mittenfishing.fishing.DiscoverableFish;
 import me.afatcookie.mittenfishing.fishing.FishingEvent;
 import me.afatcookie.mittenfishing.fishing.LootPool;
+import me.afatcookie.mittenfishing.fishing.fishinglevels.LevelManager;
 import me.afatcookie.mittenfishing.fishing.fishingquests.QuestManager;
 import me.afatcookie.mittenfishing.fishing.fishingrods.RodManager;
 import me.afatcookie.mittenfishing.fishing.guimanager.GUIClickListener;
-import me.afatcookie.mittenfishing.listeners.DisableFishTampering;
-import me.afatcookie.mittenfishing.listeners.DiscoverFishListener;
-import me.afatcookie.mittenfishing.listeners.OnJoinEvent;
-import me.afatcookie.mittenfishing.listeners.QuestCompleteListener;
+import me.afatcookie.mittenfishing.listeners.*;
 import net.milkbowl.vault.economy.Economy;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -25,23 +23,28 @@ public final class MittenFishing extends JavaPlugin {
 
     private static Economy econ = null;
 
-    private static LootPool lp;
-    private static MessageConfig mc;
-    private static FishConfig fc;
-    private static GUISConfig gc;
+    private static LootPool lootPool;
+    private static MessageConfig messageConfig;
+    private static FishConfig fishConfig;
+    private static GUISConfig guisConfig;
 
-    private static RodConfig rc;
+    private static RodConfig rodConfig;
 
-    private static QuestConfig qc;
+    private static QuestConfig questConfig;
+
 
     private static DataConfig dataConfig;
+
+    private static LevelConfig levelConfig;
     private static ConfigManager configManager;
 
     private static RodManager rodManager;
-    private Database db;
+    private Database database;
 
 
     private static QuestManager questManager;
+
+    private static LevelManager levelManager;
     private static DiscoverableFish fishDiscover;
     public static MittenFishing getInstance(){
         return instance;
@@ -56,18 +59,22 @@ public final class MittenFishing extends JavaPlugin {
     instance = this;
         getConfig().options().copyDefaults(true);
         saveDefaultConfig();
-        fc = new FishConfig(instance);
-        gc = new GUISConfig(instance);
-        mc = new MessageConfig(instance);
-        rc = new RodConfig(instance);
+        fishConfig = new FishConfig(instance);
+        guisConfig = new GUISConfig(instance);
+        messageConfig = new MessageConfig(instance);
+        rodConfig = new RodConfig(instance);
         dataConfig = new DataConfig(instance);
-        qc = new QuestConfig(instance);
+        questConfig = new QuestConfig(instance);
+        levelConfig = new LevelConfig(instance);
         configManager = new ConfigManager(instance);
     fishDiscover = new DiscoverableFish(instance);
-        lp = new LootPool(instance);
+        lootPool = new LootPool(instance);
         rodManager = new RodManager(instance, getConfigManager());
-        db = new SQLite(instance);
+        database = new SQLite(instance);
+        database.createQuestTable();
+        database.createLevelTable();
         questManager = new QuestManager(instance);
+        levelManager = new LevelManager(instance);
 
 
     registerCommands();
@@ -77,6 +84,7 @@ public final class MittenFishing extends JavaPlugin {
     @Override
     public void onDisable() {
         questManager.saveDailiesOnServerClose();
+        levelManager.saveLevels();
        saveDefaultConfig();
     }
 
@@ -96,8 +104,8 @@ public final class MittenFishing extends JavaPlugin {
     public static Economy getEconomy() {
         return econ;
     }
-    public LootPool getLp(){
-        return lp;
+    public LootPool getLootPool(){
+        return lootPool;
     }
 
 
@@ -113,18 +121,19 @@ public final class MittenFishing extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new OnJoinEvent(getFishDiscover(), instance), this);
         getServer().getPluginManager().registerEvents(new DiscoverFishListener(configManager, instance.getFishDiscover()), this);
         getServer().getPluginManager().registerEvents(new QuestCompleteListener(instance), this);
+        getServer().getPluginManager().registerEvents(new LevelUpEvent(instance, configManager), this);
     }
 
-    public  MessageConfig getMc() {
-        return mc;
+    public  MessageConfig getMessageConfig() {
+        return messageConfig;
     }
 
-    public  FishConfig getFc() {
-        return fc;
+    public  FishConfig getFishConfig() {
+        return fishConfig;
     }
 
-    public  GUISConfig getGc() {
-        return gc;
+    public  GUISConfig getGUIConfig() {
+        return guisConfig;
     }
 
     public  DiscoverableFish getFishDiscover(){
@@ -136,15 +145,15 @@ public final class MittenFishing extends JavaPlugin {
     }
 
     public RodConfig getRodConfig(){
-        return rc;
+        return rodConfig;
     }
 
     public RodManager getRodManager(){
         return rodManager;
     }
 
-    public  QuestConfig getQc() {
-        return qc;
+    public  QuestConfig getQuestConfig() {
+        return questConfig;
     }
 
     public  QuestManager getQuestManager() {
@@ -155,10 +164,16 @@ public final class MittenFishing extends JavaPlugin {
         return dataConfig;
     }
 
-    public Database getDb() {
-        return db;
+    public LevelConfig getLevelConfig(){
+        return levelConfig;
     }
 
-    public void test(){
+    public Database getDataBase() {
+        return database;
     }
+
+    public LevelManager getLevelManager(){
+        return levelManager;
+    }
+
 }

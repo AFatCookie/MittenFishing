@@ -33,7 +33,7 @@ public class FishingEvent implements Listener {
             e.setCancelled(true);
             e.setExpToDrop(0);
             e.getHook().remove();
-            instance.getLp().giveLootDirectly(player);
+            instance.getLootPool().giveLootDirectly(player);
             }
         }
     }

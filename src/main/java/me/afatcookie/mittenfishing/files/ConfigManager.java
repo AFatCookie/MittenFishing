@@ -4,6 +4,7 @@ import dev.dbassett.skullcreator.SkullCreator;
 import me.afatcookie.mittenfishing.MittenFishing;
 import me.afatcookie.mittenfishing.fishing.fishesmanger.Rarity;
 import me.afatcookie.mittenfishing.utils.ItemCreator;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -12,7 +13,6 @@ import org.bukkit.inventory.ItemStack;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Pattern;
 
 public class ConfigManager {
 
@@ -25,12 +25,14 @@ public class ConfigManager {
 
     private final QuestConfig questConfig;
 
+    private final LevelConfig levelConfig;
     public ConfigManager(MittenFishing instance) {
-        this.fishConfig = instance.getFc();
-        this.guisConfig = instance.getGc();
-        this.messageConfig = instance.getMc();
+        this.fishConfig = instance.getFishConfig();
+        this.guisConfig = instance.getGUIConfig();
+        this.messageConfig = instance.getMessageConfig();
         this.rodConfig = instance.getRodConfig();
-        this.questConfig = instance.getQc();
+        this.questConfig = instance.getQuestConfig();
+        this.levelConfig = instance.getLevelConfig();
     }
 
     //FISH CONFIG
@@ -38,61 +40,61 @@ public class ConfigManager {
     public int getWeight(String rarity){
         switch (rarity.toLowerCase()){
             case "common":
-                return fishConfig.getConfig().getInt("common-weight");
+                return fishConfig.getConfig().getInt("common.weight");
             case "rare":
-                return fishConfig.getConfig().getInt("rare-weight");
+                return fishConfig.getConfig().getInt("rare.weight");
             case "epic":
-                return fishConfig.getConfig().getInt("epic-weight");
+                return fishConfig.getConfig().getInt("epic.weight");
             case "legendary":
-                return fishConfig.getConfig().getInt("legendary-weight");
+                return fishConfig.getConfig().getInt("legendary.weight");
             case "mythic":
-                return fishConfig.getConfig().getInt("mythic-weight");
+                return fishConfig.getConfig().getInt("mythic.weight");
             case "special":
-                return fishConfig.getConfig().getInt("special-weight");
+                return fishConfig.getConfig().getInt("special.weight");
             case "quest":
-                return fishConfig.getConfig().getInt("quest-weight");
+                return fishConfig.getConfig().getInt("quest.weight");
         }
-        return fishConfig.getConfig().getInt("common-weight") ;
+        return fishConfig.getConfig().getInt("common.weight") ;
     }
 
     public double getRarityXpValue(String rarity){
         switch (rarity.toLowerCase()){
             case "common":
-                return fishConfig.getConfig().getInt("common-xp");
+                return fishConfig.getConfig().getInt("common.xp");
             case "rare":
-                return fishConfig.getConfig().getInt("rare-xp");
+                return fishConfig.getConfig().getInt("rare.xp");
             case "epic":
-                return fishConfig.getConfig().getInt("epic-xp");
+                return fishConfig.getConfig().getInt("epic.xp");
             case "legendary":
-                return fishConfig.getConfig().getInt("legendary-xp");
+                return fishConfig.getConfig().getInt("legendary.xp");
             case "mythic":
-                return fishConfig.getConfig().getInt("mythic-xp");
+                return fishConfig.getConfig().getInt("mythic.xp");
             case "special":
-                return fishConfig.getConfig().getInt("special-xp");
+                return fishConfig.getConfig().getInt("special.xp");
             case "quest":
-                return fishConfig.getConfig().getInt("quest-xp");
+                return fishConfig.getConfig().getInt("quest.xp");
         }
-        return fishConfig.getConfig().getInt("common-xp") ;
+        return fishConfig.getConfig().getInt("common.xp") ;
     }
 
     public double getRaritySellValue(String rarity){
         switch (rarity.toLowerCase()){
             case "common":
-                return fishConfig.getConfig().getInt("common-sell");
+                return fishConfig.getConfig().getInt("common.sell");
             case "rare":
-                return fishConfig.getConfig().getInt("rare-sell");
+                return fishConfig.getConfig().getInt("rare.sell");
             case "epic":
-                return fishConfig.getConfig().getInt("epic-sell");
+                return fishConfig.getConfig().getInt("epic.sell");
             case "legendary":
-                return fishConfig.getConfig().getInt("legendary-sell");
+                return fishConfig.getConfig().getInt("legendary.sell");
             case "mythic":
-                return fishConfig.getConfig().getInt("mythic-sell");
+                return fishConfig.getConfig().getInt("mythic.sell");
             case "special":
-                return fishConfig.getConfig().getInt("special-sell");
+                return fishConfig.getConfig().getInt("special.sell");
             case "quest":
-                return fishConfig.getConfig().getInt("quest-sell");
+                return fishConfig.getConfig().getInt("quest.sell");
         }
-        return fishConfig.getConfig().getInt("common-sell") ;
+        return fishConfig.getConfig().getInt("common.sell") ;
     }
 
     public String getFishName(String path){
@@ -113,6 +115,30 @@ public class ConfigManager {
 
     public boolean rarityBasedSellValue(){
         return validateBooleanInConfig(fishConfig.getConfig(), "rarity-based-sell-value");
+    }
+
+    public boolean rarityBasedLvlValue(){
+        return validateBooleanInConfig(fishConfig.getConfig(), "rarity-based-lvl-value");
+    }
+
+    public int getRarityLevelValue(Rarity rarity){
+        switch (rarity){
+            case COMMON:
+                return fishConfig.getConfig().getInt("common.lvl");
+            case RARE:
+                return fishConfig.getConfig().getInt("rare.lvl");
+            case EPIC:
+                return fishConfig.getConfig().getInt("epic.lvl");
+            case LEGENDARY:
+                return fishConfig.getConfig().getInt("legendary.lvl");
+            case MYTHIC:
+                return fishConfig.getConfig().getInt("mythic.lvl");
+            case SPECIAL:
+                return fishConfig.getConfig().getInt("special.lvl");
+            case QUEST:
+                return fishConfig.getConfig().getInt("quest.lvl");
+        }
+        return fishConfig.getConfig().getInt("common.lvl");
     }
 
 
@@ -152,7 +178,6 @@ public class ConfigManager {
                 return colorizeMessage(messageConfig.getConfig().getString("common-display") + "&lCommon");
             case "rare":
                 return colorizeMessage(messageConfig.getConfig().getString("rare-display") + "&lRare");
-
             case "epic":
                 return colorizeMessage(messageConfig.getConfig().getString("epic-display") + "&lEpic");
             case "legendary":
@@ -209,6 +234,26 @@ public class ConfigManager {
 
     public MessageConfig getMessageConfig() {
         return messageConfig;
+    }
+
+    public String getLevelMainTitle(){
+        return colorizeMessage(fishConfig.getConfig().getString("level.maintitle"));
+    }
+
+    public String getLevelSubTitle(){
+        return colorizeMessage(fishConfig.getConfig().getString("level.subtitle"));
+    }
+
+    public int getFadeIn(){
+        return fishConfig.getConfig().getInt("level.fadein");
+    }
+
+    public int getStay(){
+        return fishConfig.getConfig().getInt("level.stay");
+    }
+
+    public int getFadeOut(){
+        return fishConfig.getConfig().getInt("level.fadeout");
     }
     /////////////////////////////////////////////////////////////
 
@@ -294,7 +339,7 @@ public class ConfigManager {
     //////////////////////////////////////////////////////////////
 
     public long getDay(){
-        return questConfig.getConfig().getLong("day");
+        return System.currentTimeMillis() / 86400000;
     }
     public String getQuestName(String path){
         return validateStringInConfig(questConfig.getConfig(), path + ".name");
@@ -320,6 +365,14 @@ public class ConfigManager {
         return validateIntInConfig(questConfig.getConfig(), path + ".amount");
     }
 
+    public ItemStack getQuestItem(String path){
+        if (Material.getMaterial(path + ".questitem") == null){
+            Bukkit.getLogger().warning("[MittenFishing] Failed to add quest item to a quest.");
+            return new ItemStack(Material.DIRT, 1);
+        }
+        return new ItemStack(Material.getMaterial(path + ".questitem"), 1);
+    }
+
     public double getAmountToMake(String path){
         return validateDoubleInConfig(questConfig.getConfig(), path + ".amounttomake");
     }
@@ -335,6 +388,13 @@ public class ConfigManager {
                 break;
         }
         return questType;
+    }
+    //////////////////////////////////////////////////////////////////////////////
+
+    //LEVELS CONFIG
+    /////////////////////////////////////////////////////////////////////////////
+    public int getStartingAmount(){
+        return validateIntInConfig(levelConfig.getConfig(), "start-amount");
     }
 
     private String colorizeMessage(String message){

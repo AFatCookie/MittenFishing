@@ -22,45 +22,51 @@ public class SellGUI implements GUI{
 
     private final ConfigManager cm;
     private final Economy economy = MittenFishing.getEconomy();
+    private final Player player;
 
     private final QuestManager questManager;
     Inventory inv;
 
-    public SellGUI(MittenFishing mf){
+    public SellGUI(MittenFishing mf, Player player){
         this.cm = mf.getConfigManager();
         this.questManager = mf.getQuestManager();
+        this.player = player;
     }
     @Override
     public void onClick(Player player, Inventory inventory, ItemStack clickedItem, ClickType clickType, int slot) {
+         int counter = 0;
         //This method will handle selling fish, Regardless of where its being done. This will hopefully prevent any
         //duping with guis, and gets an accurate amount for fishes.
-        if (!clickType.isShiftClick()) {
-            totalValue = FishUtils.handleSellingFish(inventory, clickedItem, player, slot, totalValue);
-            if (inventory.contains(clickedItem) && clickedItem.getType() == Material.HOPPER) {
-                economy.depositPlayer(player, totalValue);
-                player.sendMessage(cm.getSoldFishMessage().replace("{total_amount}", String.valueOf(totalValue)));
-                inventory.clear();
-                player.closeInventory();
-                if (!questManager.hasActiveSellQuest(player)) return;
-                for (PlayerQuest playerQuest : questManager.getPlayerSellQuest(player)) {
-                    if (playerQuest == null) continue;
-                    if (playerQuest.getQuest() instanceof SellQuest) {
-                        playerQuest.updateQuestProgress(totalValue);
+       // if (!isNotGlass(this.player.getInventory(), slot)) return;
+        if (inventory.contains(clickedItem) && clickedItem.getType() == Material.HOPPER && clickType.isLeftClick()) {
+            for (int i = 0; i < this.player.getInventory().getSize(); i++) {
+                if (isNotGlass(this.player.getInventory(), i) && !this.player.getInventory().getItem(i).getType().toString().contains("HOPPER")) {
+                    if (FishUtils.isFish(this.player.getInventory().getItem(i))) {
+                        this.player.getInventory().setItem(i, new ItemStack(Material.AIR, 1));
                     }
                 }
             }
+                economy.depositPlayer(this.player, totalValue);
+                this.player.sendMessage(cm.getSoldFishMessage().replace("{total_amount}", String.valueOf(totalValue)));
+                inventory.clear();
+                player.closeInventory();
+                if (!questManager.hasActiveSellQuest(this.player)) return;
+                for (PlayerQuest playerQuest : questManager.getPlayerSellQuest(this.player)) {
+                    if (playerQuest == null) continue;
+                    if (playerQuest.getQuest() instanceof SellQuest && counter <= 0) {
+                        playerQuest.updateQuestProgress(totalValue);
+                    }else{
+                        counter++;
+                    }
+                }
+            }else{
         }
-    }
+        }
 
 
 
     @Override
     public void onClose(Player player, Inventory inventory) {
-        for (int i = 0; i < inventory.getSize(); i++) {
-            if (isNotGlass(inventory, i) && !inventory.getItem(i).getType().toString().contains("HOPPER")) {
-             player.getInventory().addItem(inventory.getItem(i));
-            }
-        }
     }
 
     @Override
@@ -71,6 +77,13 @@ public class SellGUI implements GUI{
     @Override
     public Inventory getInventory() {
         inv = new InventoryBuilder().createGUIFromConfig(cm.getGuisConfig().getConfig(), "sellgui.items", this, "sellgui").build();
+        for (int i = 0; i < player.getInventory().getSize(); i++) {
+            if (FishUtils.isFish(player.getInventory().getItem(i)) && player.getInventory().getItem(i) != null && player.getInventory().getItem(i).getAmount() <= 1){
+                totalValue += FishUtils.getFishValue(player.getInventory().getItem(i));
+            }else if (FishUtils.isFish(player.getInventory().getItem(i)) && player.getInventory().getItem(i) != null && player.getInventory().getItem(i).getAmount() > 1){
+                totalValue += (FishUtils.getFishValue(player.getInventory().getItem(i)) * player.getInventory().getItem(i).getAmount());
+            }
+        }
         return inv;
     }
 

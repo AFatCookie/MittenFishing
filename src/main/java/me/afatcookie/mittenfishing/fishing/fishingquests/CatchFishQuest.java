@@ -1,6 +1,7 @@
 package me.afatcookie.mittenfishing.fishing.fishingquests;
 
 import me.afatcookie.mittenfishing.fishing.fishesmanger.Fish;
+import org.bukkit.inventory.ItemStack;
 
 import java.util.List;
 
@@ -10,8 +11,8 @@ public class CatchFishQuest extends Quest{
 
     private final int amountToBeCaught;
 
-    public CatchFishQuest(String name, List<String> description, double rewardValue, double xpValue, Fish fish, int questID, int amountToBeCaught) {
-        super(name, description, rewardValue, xpValue, questID);
+    public CatchFishQuest(String name, List<String> description, double rewardValue, double xpValue, Fish fish, int questID, int amountToBeCaught, ItemStack questItem) {
+        super(name, description, rewardValue, xpValue, questID, questItem);
         this.fishToBeCaught = fish;
         this.amountToBeCaught = amountToBeCaught;
     }

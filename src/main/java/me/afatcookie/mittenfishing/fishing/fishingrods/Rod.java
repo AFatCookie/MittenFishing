@@ -1,4 +1,5 @@
 package me.afatcookie.mittenfishing.fishing.fishingrods;
+import com.github.mittenmc.serverutils.Colors;
 import me.afatcookie.mittenfishing.MittenFishing;
 import me.afatcookie.mittenfishing.utils.ItemCreator;
 import org.bukkit.Bukkit;
@@ -73,7 +74,7 @@ public class Rod {
                             .setUnbreakable(configuration.getBoolean(ingredientsPath + ".unbreakable"))
                             .addGlow(configuration.getBoolean(ingredientsPath + ".glowing")).setLore(configuration.getStringList(ingredientsPath + ".lore")).getItemStack();
                 }
-                instance.getLp().getAllIngredients().add(ingredient);
+                instance.getLootPool().getAllIngredients().add(ingredient);
                 ingredient = new ItemCreator(ingredient).setPDCString(new NamespacedKey(instance, "ingredient"), "ingredient").getItemStack();
                 weight = configuration.getInt(ingredientsPath + ".weight");
                 if (weight <= -1) weight = 1;
@@ -87,7 +88,7 @@ public class Rod {
                 }
             }
         }else{
-            Bukkit.getLogger().log(Level.SEVERE, "Failed to add rods ingredient");
+            Bukkit.getLogger().log(Level.WARNING, "Failed to add rods ingredient to rod: " + Colors.strip(rod.getItemMeta().getDisplayName()));
             return rod;
         }
         return rod;

@@ -1,47 +1,49 @@
 package me.afatcookie.mittenfishing.commands;
 
-import com.github.mittenmc.serverutils.UUIDConverter;
-import me.afatcookie.mittenfishing.fishing.fishingquests.PlayerQuest;
-import me.afatcookie.mittenfishing.fishing.fishingquests.Quest;
-import me.afatcookie.mittenfishing.fishing.guimanager.ActiveQuestDisplayGUI;
+import net.milkbowl.vault.chat.Chat;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.util.StringUtil;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
 
-public class ViewQuestsCommand extends CommandBuilder{
+public class ForceLevelCommand extends CommandBuilder{
     @Override
     String getName() {
-        return "viewQuests";
+        return "ForceLevel";
     }
 
     @Override
     String getDescription() {
-        return "Views all active quests for the day";
+        return "Forces the desired Player's level by 1";
     }
 
     @Override
     String getSyntax() {
-        return "/mf viewQuests";
+        return "/mfadmin forceLevel <Player>";
     }
 
     @Override
     String getColoredSyntax() {
-        return ChatColor.GOLD + "Usage: " + getSyntax();
+        return ChatColor.YELLOW + "Usage: " + getSyntax();
     }
 
     @Override
     void preform(CommandSender commandSender, String[] strings) {
         if (!(commandSender instanceof  Player)) return;
         Player player = (Player) commandSender;
-        if (strings.length > 0){
-            player.openInventory(new ActiveQuestDisplayGUI(instance, player).getInventory());
+        if (strings.length > 1){
+            Player target  = Bukkit.getPlayerExact(strings[1]);
+            if (target != null){
+                instance.getLevelManager().force(target);
+                player.sendMessage(ChatColor.YELLOW + "You've just forced " + target.getName() + "level by 1!");
+            }
         }
+        player.sendMessage("Not enough arguments, please you the command like this: " + getSyntax());
+
     }
 
     @Override
@@ -54,6 +56,4 @@ public class ViewQuestsCommand extends CommandBuilder{
 
         return null;
     }
-
-
 }

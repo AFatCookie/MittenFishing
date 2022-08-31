@@ -39,7 +39,7 @@ public class RodManager {
     /**
      * Gets A Fishing rod and ingredients from configuration file. It also inserts the ingredients into the lootPool with
      * the desired weight, however this feature is toggable for each item in config.
-     * @param configuration
+     * @param configuration configuration to check from
      */
     private void getRodFromConfigSection(FileConfiguration configuration) {
         if (configuration.getConfigurationSection("fishingrods") != null) {
@@ -51,7 +51,7 @@ public class RodManager {
                 Rod rod = new Rod(name, timeToFish, levelReq, path, instance);
                 fishingRods.add(rod);
                 for (Map.Entry<Integer, ItemStack> ingredientsWeight : rod.getIngredientWeights().entrySet()){
-                    instance.getLp().getLootPool().add(new LootItem(ingredientsWeight.getKey(), ingredientsWeight.getValue(), instance));
+                    instance.getLootPool().getLootPool().add(new LootItem(ingredientsWeight.getKey(), ingredientsWeight.getValue(), instance));
                 }
             }
         }

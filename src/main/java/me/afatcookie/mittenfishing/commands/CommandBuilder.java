@@ -12,7 +12,7 @@ import java.util.List;
  */
 public abstract class CommandBuilder {
 
-    protected LootPool lp = MittenFishing.getInstance().getLp();
+    protected LootPool lp = MittenFishing.getInstance().getLootPool();
     protected MittenFishing instance = MittenFishing.getInstance();
 
     protected static List<String> subbiesPass = new ArrayList<>();

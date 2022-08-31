@@ -25,6 +25,7 @@ public class PlayerCommandListener implements TabExecutor {
         commands.add(new FishingMenuGUICommand());
         commands.add(new OpenRodCraftCommand());
         commands.add(new ViewQuestsCommand());
+        commands.add(new ViewLevelCommand());
 
         for (CommandBuilder commandBuilder : commands){
             commandsName.add(commandBuilder.getName());

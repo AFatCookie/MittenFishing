@@ -22,7 +22,7 @@ import java.util.*;
  * @author AFatCookie
  *
  */
-@SuppressWarnings({ "unused","ConstantConditions" })
+@SuppressWarnings({"unused", "ConstantConditions", "UnusedReturnValue"})
 public class ItemCreator {
 
 

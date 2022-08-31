@@ -1,6 +1,8 @@
 package me.afatcookie.mittenfishing.fishing.fishingquests;
 
 
+import org.bukkit.inventory.ItemStack;
+
 import java.util.List;
 
 public class SellQuest extends Quest{
@@ -8,8 +10,8 @@ public class SellQuest extends Quest{
 
     private final double amountToMake;
 
-    public SellQuest(String name, List<String> description, double rewardValue, double xpValue, int questID, double amountToMake) {
-        super(name, description, rewardValue, xpValue, questID);
+    public SellQuest(String name, List<String> description, double rewardValue, double xpValue, int questID, double amountToMake, ItemStack questItem) {
+        super(name, description, rewardValue, xpValue, questID, questItem);
         this.amountToMake = amountToMake;
     }
 

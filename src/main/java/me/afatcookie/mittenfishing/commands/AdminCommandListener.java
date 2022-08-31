@@ -18,6 +18,7 @@ public class AdminCommandListener implements TabExecutor {
     public AdminCommandListener(){
         subCommands.add(new MfGiveAllCommand());
         subCommands.add(new ReloadConfigsCommand());
+        subCommands.add(new ForceLevelCommand());
         for (CommandBuilder sub : subCommands){
             onTabComplete.add(sub.getName());
             CommandBuilder.adminSubbiesPass.add(sub.getName());

@@ -33,14 +33,15 @@ public class ReloadConfigsCommand extends CommandBuilder{
         if (strings.length > 0) {
                 try {
 
-                    instance.getFc().reload();
-                    instance.getGc().reload();
-                    instance.getMc().reload();
+                    instance.getFishConfig().reload();
+                    instance.getGUIConfig().reload();
+                    instance.getMessageConfig().reload();
                     instance.getRodConfig().reload();
-                    instance.getQc().reload();
-                    instance.getLp().reload(instance.getFc().getConfig(), instance.getFishDiscover());
+                    instance.getQuestConfig().reload();
+                    instance.getLootPool().reload(instance.getFishConfig().getConfig(), instance.getFishDiscover());
                     instance.getRodManager().reload(instance.getRodConfig().getConfig());
-                    instance.getQuestManager().reloadQuests(instance.getQc().getConfig(), "quests");
+                    instance.getQuestManager().reloadQuests(instance.getQuestConfig().getConfig(), "quests");
+                    instance.getLevelManager().reload();
                     commandSender.sendMessage(ChatColor.AQUA + "Successfully reloaded Mitten Fishing!");
                 } catch (IllegalArgumentException | NullPointerException exception) {
                     commandSender.sendMessage("Failed to reload Mitten Fishing!");

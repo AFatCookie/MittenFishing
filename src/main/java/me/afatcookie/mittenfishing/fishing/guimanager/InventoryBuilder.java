@@ -1,10 +1,10 @@
 package me.afatcookie.mittenfishing.fishing.guimanager;
+
 import com.github.mittenmc.serverutils.Colors;
 import dev.dbassett.skullcreator.SkullCreator;
 import me.afatcookie.mittenfishing.MittenFishing;
 import me.afatcookie.mittenfishing.utils.ItemCreator;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.inventory.InventoryType;
@@ -12,7 +12,9 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * This is an inventory builder which can be used for ease of access to preset, settings and more!

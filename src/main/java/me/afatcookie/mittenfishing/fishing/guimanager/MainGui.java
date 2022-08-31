@@ -22,7 +22,7 @@ public class MainGui implements GUI{
     @Override
     public void onClick(Player player, Inventory inventory, ItemStack clickedItem, ClickType clickType, int slot) {
         if (inventory.contains(clickedItem) && clickedItem.getItemMeta().getDisplayName().contains("Sell")){
-            player.openInventory(new SellGUI(instance).getInventory());
+            player.openInventory(new SellGUI(instance, player).getInventory());
         }
         if (inventory.contains(clickedItem) && clickedItem.getItemMeta().getDisplayName().contains("Rods")){
             player.openInventory(new RodDisplayGUI(instance).getInventory());

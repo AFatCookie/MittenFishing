@@ -1,5 +1,5 @@
 package me.afatcookie.mittenfishing.fishing;
-import com.github.mittenmc.serverutils.ServerUtils;
+
 import me.afatcookie.mittenfishing.MittenFishing;
 import me.afatcookie.mittenfishing.files.ConfigManager;
 import me.afatcookie.mittenfishing.fishing.fishesmanger.Fish;
@@ -18,7 +18,6 @@ public class LootItem {
 
     private final ConfigManager cm;
 
-    private Player player;
     private final int weight;
     private  Rarity rarity;
     private ItemStack itemStack;
@@ -29,12 +28,7 @@ public class LootItem {
         this.rarity = rarity;
         this.weight = weight;
         this.fish = fish;
-    }
-    public LootItem(Player player, int weight, ItemStack itemStack, MittenFishing mf){
-        this.cm = mf.getConfigManager();
-        this.player = player;
-        this.weight = weight;
-        this.itemStack = itemStack;
+        this.itemStack = fish.getFishItem();
     }
 
     public LootItem(int weight, ItemStack itemStack, MittenFishing mf){
@@ -51,7 +45,7 @@ public class LootItem {
     }
 
     public void sendMessage(Player player){
-        player.sendMessage(cm.getRecievedFishMessage().replace("{fish_name}", fish.getName()));
+            player.sendMessage(cm.getRecievedFishMessage().replace("{fish_name}", itemStack.getItemMeta().getDisplayName()));
     }
 
     public void sendSound(Player player){
@@ -65,13 +59,6 @@ public class LootItem {
         }
     }
 
-    public Player getPlayer() {
-        return player;
-    }
-
-    public void setPlayer(Player player) {
-        this.player = player;
-    }
 
     public Rarity getRarity() {
         return rarity;

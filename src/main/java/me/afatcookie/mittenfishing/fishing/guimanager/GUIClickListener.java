@@ -30,9 +30,10 @@ public class GUIClickListener implements Listener {
             e.setCancelled(true);
         }
         if (getGUI instanceof SellGUI){
-            if (!FishUtils.isFish(e.getCurrentItem())){
-                e.setCancelled(true);
-            }
+            e.setCancelled(true);
+        }
+        if (getGUI instanceof ActiveQuestDisplayGUI){
+            e.setCancelled(true);
         }
         if (getGUI instanceof FishingRodCraftingGUI){
             if (e.getCurrentItem().getType() == Material.EMERALD_BLOCK){
